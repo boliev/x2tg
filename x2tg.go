@@ -20,9 +20,17 @@ func (a App) Run() {
 	a.parsers["reddit"] = parser.NewRedditParser(httpClient)
 
 	sources := []*domain.Source{}
+	// sources = append(sources, &domain.Source{
+	// 	Resource: "reddit",
+	// 	Url:      "https://www.reddit.com/r/golang/",
+	// })
+	// sources = append(sources, &domain.Source{
+	// 	Resource: "reddit",
+	// 	Url:      "https://www.reddit.com/r/StartledCats/",
+	// })
 	sources = append(sources, &domain.Source{
 		Resource: "reddit",
-		Url:      "https://www.reddit.com/r/golang/",
+		Url:      "https://www.reddit.com/r/ProgrammerHumor/",
 	})
 
 	for _, source := range sources {
@@ -32,9 +40,10 @@ func (a App) Run() {
 			continue
 		}
 		for _, post := range posts {
-			fmt.Printf("%s\n", post.Title)
-			fmt.Printf("%s\n", post.Source)
-			fmt.Printf("%s\n", post.Text)
+			fmt.Printf("Title: %s\n", post.Title)
+			fmt.Printf("Source: %s\n", post.Source)
+			fmt.Printf("Type: %s\n", post.Type)
+			fmt.Printf("Content: %s\n", post.Content)
 			fmt.Println("-----------")
 		}
 	}

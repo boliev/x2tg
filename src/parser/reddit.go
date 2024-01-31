@@ -51,10 +51,20 @@ func (r Reddit) getTopPosts(sub string) ([]redditPost, error) {
 func (r Reddit) toDomain(posts []redditPost) []*domain.Post {
 	domainPosts := []*domain.Post{}
 	for _, post := range posts {
+		contentType := domain.TYPE_TEXT
+		content := post.Data.Selftext
+		if post.Data.IsVideo {
+			contentType = domain.TYPE_VIDEO
+			content = post.Data.Media.RedditVideo.FallbackUrl
+		} else if post.Data.PostHint == "image" {
+			contentType = domain.TYPE_PIC
+			content = post.Data.Url
+		}
 		domainPosts = append(domainPosts, &domain.Post{
-			Title:  post.Data.Title,
-			Source: post.Data.Url,
-			Text:   post.Data.Selftext,
+			Title:   post.Data.Title,
+			Source:  post.Data.Url,
+			Content: content,
+			Type:    contentType,
 		})
 	}
 
