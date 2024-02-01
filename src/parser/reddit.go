@@ -19,8 +19,8 @@ func NewRedditParser(client HttpClient) *Reddit {
 }
 
 func (r Reddit) Parse(source *domain.Source) ([]*domain.Post, error) {
-	fmt.Printf("Source: %s (%s)!\n", source.Resource, source.Url)
-	sub := r.getSubredditFromUrl(source.Url)
+	fmt.Printf("Source: %s (%s)!\n", source.Resource, source.URL)
+	sub := r.getSubredditFromUrl(source.URL)
 	posts, err := r.getTopPosts(sub)
 	if err != nil {
 		return nil, err
