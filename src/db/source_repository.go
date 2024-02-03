@@ -1,30 +1,37 @@
 package db
 
 import (
+	"database/sql"
+
 	"github.com/boliev/x2tg/src/domain"
 )
 
 type SourceRepository struct {
+	DB *sql.DB
 }
 
-func NewSourceRepository() *SourceRepository {
-	return &SourceRepository{}
+func NewSourceRepository(DB *sql.DB) *SourceRepository {
+	return &SourceRepository{
+		DB: DB,
+	}
 }
 
-func (sr *SourceRepository) GetActive() []*domain.Source {
+func (sr *SourceRepository) GetActive() ([]*domain.Source, error) {
+	rows, err := sr.DB.Query("SELECT id, resource, url, is_active FROM sources where is_active = $1", true)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	sources := []*domain.Source{}
-	sources = append(sources, &domain.Source{
-		Resource: "reddit",
-		URL:      "https://www.reddit.com/r/golang/",
-	})
-	sources = append(sources, &domain.Source{
-		Resource: "reddit",
-		URL:      "https://www.reddit.com/r/StartledCats/",
-	})
-	sources = append(sources, &domain.Source{
-		Resource: "reddit",
-		URL:      "https://www.reddit.com/r/ProgrammerHumor/",
-	})
+	for rows.Next() {
+		source := &domain.Source{}
+		if err := rows.Scan(&source.ID, &source.Resource, &source.URL, &source.IsActive); err != nil {
+			return sources, err
+		}
 
-	return sources
+		sources = append(sources, source)
+	}
+
+	return sources, nil
 }

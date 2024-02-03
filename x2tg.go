@@ -20,22 +20,19 @@ func (a App) Run() {
 	a.parsers = make(map[string]domain.Parser)
 	a.parsers["reddit"] = parser.NewRedditParser(httpClient)
 
-	sourceRepository := db.NewSourceRepository()
-	sources := sourceRepository.GetActive()
+	DB, err := db.NewDBConnection("localhost", 5432, "x2tg", "123456", "x2tg")
+	if err != nil {
+		panic(fmt.Sprintf("cannot connect to DB %s", err.Error()))
+	}
+	defer DB.Close()
+
+	sourceRepository := db.NewSourceRepository(DB)
+	sources, err := sourceRepository.GetActive()
+	if err != nil {
+		panic(fmt.Sprintf("error while retrieveing sources %s", err))
+	}
 
 	for _, source := range sources {
 		fmt.Printf("URL: %s\n", source.URL)
-		// posts, err := a.parsers[source.Resource].Parse(source)
-		// if err != nil {
-		// 	fmt.Errorf("Cannot parse source %s(%s). Skip", source.Url, source.Resource)
-		// 	continue
-		// }
-		// for _, post := range posts {
-		// 	fmt.Printf("Title: %s\n", post.Title)
-		// 	fmt.Printf("Source: %s\n", post.Source)
-		// 	fmt.Printf("Type: %s\n", post.Type)
-		// 	fmt.Printf("Content: %s\n", post.Content)
-		// 	fmt.Println("-----------")
-		// }
 	}
 }

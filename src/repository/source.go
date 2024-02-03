@@ -1,5 +1,7 @@
 package repository
 
+import "github.com/boliev/x2tg/src/domain"
+
 type SourceRepository interface {
-	getActive() []*Source
+	getActive() ([]*domain.Source, error)
 }
