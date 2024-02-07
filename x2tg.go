@@ -3,9 +3,9 @@ package x2tg
 import (
 	"fmt"
 
-	db "github.com/boliev/x2tg/internal/db"
 	"github.com/boliev/x2tg/internal/domain/service"
-	parser "github.com/boliev/x2tg/internal/parser"
+	db "github.com/boliev/x2tg/internal/infra/db"
+	parser "github.com/boliev/x2tg/internal/service/parser"
 	"github.com/boliev/x2tg/pkg/http_client"
 )
 
@@ -35,7 +35,7 @@ func (a App) Run() {
 	for _, source := range sources {
 		posts, err := a.parsers["reddit"].Parse(source)
 		if err != nil {
-			fmt.Errorf("error: %s", err.Error())
+			fmt.Printf("error: %s", err.Error())
 			continue
 		}
 

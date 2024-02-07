@@ -8,16 +8,16 @@ import (
 type HTTP struct {
 }
 
-func (h HTTP) Get(uri string) (string, error) {
+func (h HTTP) Get(uri string) (int, string, error) {
 	res, err := http.Get(uri)
 	if err != nil {
-		return "", err
+		return 0, "", err
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		return 0, "", err
 	}
 
-	return string(body), nil
+	return res.StatusCode, string(body), nil
 }

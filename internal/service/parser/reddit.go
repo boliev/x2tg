@@ -18,7 +18,7 @@ func NewRedditParser(client HttpClient) *Reddit {
 	}
 }
 
-func (r Reddit) Parse(source *domain.Source) ([]*domain.Post, error) {
+func (r *Reddit) Parse(source *domain.Source) ([]*domain.Post, error) {
 	fmt.Printf("Source: %s (%s)!\n", source.Resource, source.URL)
 	sub := r.getSubredditFromUrl(source.URL)
 	posts, err := r.getTopPosts(sub)
@@ -29,15 +29,19 @@ func (r Reddit) Parse(source *domain.Source) ([]*domain.Post, error) {
 	return r.toDomain(posts), nil
 }
 
-func (r Reddit) getSubredditFromUrl(subreddit string) string {
+func (r *Reddit) getSubredditFromUrl(subreddit string) string {
 	return path.Base(subreddit)
 }
 
-func (r Reddit) getTopPosts(sub string) ([]redditPost, error) {
+func (r *Reddit) getTopPosts(sub string) ([]redditPost, error) {
 	topUrl := fmt.Sprintf("https://www.reddit.com/r/%s/top/.json?t=day", sub)
-	jsn, err := r.client.Get(topUrl)
+	code, jsn, err := r.client.Get(topUrl)
 	if err != nil {
 		return nil, err
+	}
+
+	if code >= 300 {
+		return nil, r.processError(jsn)
 	}
 
 	data := &reddisPostList{}
@@ -48,7 +52,7 @@ func (r Reddit) getTopPosts(sub string) ([]redditPost, error) {
 	return data.Data.Children, nil
 }
 
-func (r Reddit) toDomain(posts []redditPost) []*domain.Post {
+func (r *Reddit) toDomain(posts []redditPost) []*domain.Post {
 	domainPosts := []*domain.Post{}
 	for _, post := range posts {
 		contentType := domain.TYPE_TEXT
@@ -69,4 +73,13 @@ func (r Reddit) toDomain(posts []redditPost) []*domain.Post {
 	}
 
 	return domainPosts
+}
+
+func (r *Reddit) processError(jsn string) error {
+	data := &RedditError{}
+	if err := json.Unmarshal([]byte(jsn), &data); err != nil {
+		return err
+	}
+
+	return fmt.Errorf("%d: %s", data.Error, data.Message)
 }
