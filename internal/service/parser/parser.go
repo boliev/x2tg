@@ -1,4 +1,4 @@
-package service
+package parser
 
 import "github.com/boliev/x2tg/internal/domain/model"
 

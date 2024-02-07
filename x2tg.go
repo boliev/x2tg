@@ -3,21 +3,20 @@ package x2tg
 import (
 	"fmt"
 
-	"github.com/boliev/x2tg/internal/domain/service"
 	db "github.com/boliev/x2tg/internal/infra/db"
 	parser "github.com/boliev/x2tg/internal/service/parser"
 	"github.com/boliev/x2tg/pkg/http_client"
 )
 
 type App struct {
-	parsers map[string]service.Parser
+	parsers map[string]parser.Parser
 }
 
 func (a App) Run() {
 	fmt.Println("I'm the service! I'm working!")
 
 	httpClient := &http_client.HTTP{}
-	a.parsers = make(map[string]service.Parser)
+	a.parsers = make(map[string]parser.Parser)
 	a.parsers["reddit"] = parser.NewRedditParser(httpClient)
 
 	DB, err := db.NewDBConnection("localhost", 5432, "x2tg", "123456", "x2tg")
