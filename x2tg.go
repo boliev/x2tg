@@ -4,20 +4,20 @@ import (
 	"fmt"
 
 	db "github.com/boliev/x2tg/internal/db"
-	"github.com/boliev/x2tg/internal/domain"
+	"github.com/boliev/x2tg/internal/domain/service"
 	parser "github.com/boliev/x2tg/internal/parser"
 	"github.com/boliev/x2tg/pkg/http_client"
 )
 
 type App struct {
-	parsers map[string]domain.Parser
+	parsers map[string]service.Parser
 }
 
 func (a App) Run() {
 	fmt.Println("I'm the service! I'm working!")
 
 	httpClient := &http_client.HTTP{}
-	a.parsers = make(map[string]domain.Parser)
+	a.parsers = make(map[string]service.Parser)
 	a.parsers["reddit"] = parser.NewRedditParser(httpClient)
 
 	DB, err := db.NewDBConnection("localhost", 5432, "x2tg", "123456", "x2tg")
@@ -33,6 +33,14 @@ func (a App) Run() {
 	}
 
 	for _, source := range sources {
-		fmt.Printf("URL: %s\n", source.URL)
+		posts, err := a.parsers["reddit"].Parse(source)
+		if err != nil {
+			fmt.Errorf("error: %s", err.Error())
+			continue
+		}
+
+		for _, post := range posts {
+			fmt.Printf("Title: %s\nURL: %s\nType: %s\n---\n", post.Title, post.Source, post.Type)
+		}
 	}
 }

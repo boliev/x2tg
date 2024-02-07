@@ -1,4 +1,4 @@
-package domain
+package model
 
 type Source struct {
 	ID       int

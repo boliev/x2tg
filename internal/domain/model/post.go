@@ -1,4 +1,4 @@
-package domain
+package model
 
 const TYPE_TEXT = "text"
 const TYPE_PIC = "pic"
