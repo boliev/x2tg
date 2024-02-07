@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 
-	"github.com/boliev/x2tg/src/domain"
+	"github.com/boliev/x2tg/internal/domain"
 )
 
 type SourceRepository struct {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/boliev/x2tg/src/domain"
+	"github.com/boliev/x2tg/internal/domain"
 )
 
 type Reddit struct {

@@ -3,10 +3,10 @@ package x2tg
 import (
 	"fmt"
 
+	db "github.com/boliev/x2tg/internal/db"
+	"github.com/boliev/x2tg/internal/domain"
+	parser "github.com/boliev/x2tg/internal/parser"
 	"github.com/boliev/x2tg/pkg/http_client"
-	db "github.com/boliev/x2tg/src/db"
-	"github.com/boliev/x2tg/src/domain"
-	parser "github.com/boliev/x2tg/src/parser"
 )
 
 type App struct {
