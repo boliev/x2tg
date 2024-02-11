@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	domain "github.com/boliev/x2tg/internal/domain/model"
+	"github.com/huandu/go-sqlbuilder"
 )
 
 type SourceRepository struct {
@@ -17,19 +18,46 @@ func NewSourceRepository(DB *sql.DB) *SourceRepository {
 }
 
 func (sr *SourceRepository) GetActive() ([]*domain.Source, error) {
-	rows, err := sr.DB.Query("SELECT id, resource, url, is_active FROM sources where is_active = $1", true)
+	sb := sqlbuilder.PostgreSQL.NewSelectBuilder()
+	sb.Select("s.id", "s.resource", "s.url", "s.is_active, c.id, c.tg_id, c.name")
+	sb.From(sb.As("sources", "s"))
+	sb.JoinWithOption(sqlbuilder.InnerJoin, sb.As("sources_channels", "sc"), "sc.source_id = s.id")
+	sb.JoinWithOption(sqlbuilder.InnerJoin, sb.As("channels", "c"), "c.id = sc.channel_id")
+	sb.Where(sb.E("s.is_active", true))
+
+	sql, args := sb.Build()
+	rows, err := sr.DB.Query(sql, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	sources := []*domain.Source{}
+	sourcesMap := make(map[int]*domain.Source)
 	for rows.Next() {
 		source := &domain.Source{}
-		if err := rows.Scan(&source.ID, &source.Resource, &source.URL, &source.IsActive); err != nil {
-			return sources, err
+		channel := &domain.Channel{}
+		if err := rows.Scan(
+			&source.ID,
+			&source.Resource,
+			&source.URL,
+			&source.IsActive,
+			&channel.ID,
+			&channel.TgIg,
+			&channel.Name,
+		); err != nil {
+			return nil, err
 		}
 
+		if _, ok := sourcesMap[source.ID]; ok {
+			sourcesMap[source.ID].Channels = append(sourcesMap[source.ID].Channels, channel)
+		} else {
+			source.Channels = append(source.Channels, channel)
+			sourcesMap[source.ID] = source
+		}
+	}
+
+	sources := []*domain.Source{}
+	for _, source := range sourcesMap {
 		sources = append(sources, source)
 	}
 
