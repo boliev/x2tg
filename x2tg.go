@@ -32,14 +32,15 @@ func (a App) Run() {
 	}
 
 	for _, source := range sources {
-		posts, err := a.parsers["reddit"].Parse(source)
-		if err != nil {
-			fmt.Printf("error: %s", err.Error())
-			continue
-		}
+		fmt.Printf("%#v\n\n", source)
+		// posts, err := a.parsers["reddit"].Parse(source)
+		// if err != nil {
+		// 	fmt.Printf("error: %s", err.Error())
+		// 	continue
+		// }
 
-		for _, post := range posts {
-			fmt.Printf("Title: %s\nURL: %s\nType: %s\n---\n", post.Title, post.Source, post.Type)
-		}
+		// for _, post := range posts {
+		// 	fmt.Printf("Title: %s\nURL: %s\nType: %s\n---\n", post.Title, post.Source, post.Type)
+		// }
 	}
 }
