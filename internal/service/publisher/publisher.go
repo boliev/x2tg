@@ -3,6 +3,7 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/boliev/x2tg/internal/domain/model"
 )
@@ -24,18 +25,26 @@ func (p *Publisher) Publish(posts []*model.Post, channels []*model.Channel) erro
 			if post.Type == model.TYPE_GALLERY {
 				uri = "https://api.telegram.org//sendMediaGroup"
 			}
+			if post.Type == model.TYPE_PIC {
+				uri = "https://api.telegram.org//sendPhoto"
+			}
+			if post.Type == model.TYPE_VIDEO {
+				uri = "https://api.telegram.org//sendVideo"
+			}
 
 			request, err := p.buildRequest(cnh, post)
 			if err != nil {
-				fmt.Printf("error in %s %s\n", post.Source, err)
+				fmt.Printf("cannot build request %s %s\n", post.Source, err)
 			}
 			code, message, err := p.client.Post(uri, request)
 			if err != nil {
-				fmt.Printf("error in %s %s\n", post.Source, err)
+				fmt.Printf("cannot publish post %s %s\n", post.Source, err)
 			}
 			if code >= 300 {
-				fmt.Printf("error in %s: code %d, %s\n", post.Source, code, message)
+				fmt.Printf("cannot publish post %s: code %d, %s\n", post.Source, code, message)
 			}
+
+			time.Sleep(2 * time.Second)
 		}
 	}
 
@@ -49,6 +58,16 @@ func (p *Publisher) buildRequest(cnh *model.Channel, post *model.Post) (*postReq
 	var err error
 	if post.Type == model.TYPE_GALLERY {
 		request, err = p.buildMediaGroupRequest(cnh, post)
+		if err != nil {
+			return nil, err
+		}
+	} else if post.Type == model.TYPE_PIC {
+		request, err = p.buildPhotoRequest(cnh, post)
+		if err != nil {
+			return nil, err
+		}
+	} else if post.Type == model.TYPE_VIDEO {
+		request, err = p.buildVideoRequest(cnh, post)
 		if err != nil {
 			return nil, err
 		}
@@ -86,6 +105,30 @@ func (p *Publisher) buildMediaGroupRequest(cnh *model.Channel, post *model.Post)
 		ChatId:                cnh.TgIg,
 		DisableWebPagePreview: false,
 		Media:                 string(jsonMedia),
+	}
+
+	return request, nil
+}
+
+func (p *Publisher) buildPhotoRequest(cnh *model.Channel, post *model.Post) (*postRequest, error) {
+	request := &postRequest{
+		ChatId:                cnh.TgIg,
+		ParseMode:             "html",
+		DisableWebPagePreview: false,
+		Photo:                 post.Media[0],
+		Caption:               fmt.Sprintf("%s\nhttp://reddit.com%s", post.Title, post.Source),
+	}
+
+	return request, nil
+}
+
+func (p *Publisher) buildVideoRequest(cnh *model.Channel, post *model.Post) (*postRequest, error) {
+	request := &postRequest{
+		ChatId:                cnh.TgIg,
+		ParseMode:             "html",
+		DisableWebPagePreview: false,
+		Video:                 post.Media[0],
+		Caption:               fmt.Sprintf("%s\nhttp://reddit.com%s", post.Title, post.Source),
 	}
 
 	return request, nil

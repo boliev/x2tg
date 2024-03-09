@@ -2,6 +2,7 @@ package x2tg
 
 import (
 	"fmt"
+	"time"
 
 	db "github.com/boliev/x2tg/internal/infra/db"
 	parser "github.com/boliev/x2tg/internal/service/parser"
@@ -46,6 +47,8 @@ func (a App) Run() {
 		if err != nil {
 			fmt.Printf("error: %s", err.Error())
 		}
+
+		time.Sleep(5 * time.Second)
 
 		// for _, post := range posts {
 		// 	fmt.Printf("Title: %s\nURL: %s\nType: %s\n---\n", post.Title, post.Source, post.Type)
