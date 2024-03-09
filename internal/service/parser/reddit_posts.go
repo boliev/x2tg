@@ -14,12 +14,14 @@ type redditPost struct {
 }
 
 type redditPostData struct {
-	Title    string
-	Url      string
-	Selftext string
-	IsVideo  bool   `json:"is_video"`
-	PostHint string `json:"post_hint"`
-	Media    RedditMedia
+	Title       string
+	Permalink   string
+	Url         string
+	Selftext    string
+	IsVideo     bool        `json:"is_video"`
+	PostHint    string      `json:"post_hint"`
+	GalleryData GalleryData `json:"gallery_data"`
+	Media       RedditMedia
 }
 
 type RedditMedia struct {
@@ -28,4 +30,12 @@ type RedditMedia struct {
 
 type RedditVideo struct {
 	FallbackUrl string `json:"fallback_url"`
+}
+
+type GalleryData struct {
+	Items []GalleyItem
+}
+
+type GalleyItem struct {
+	MediaId string `json:"media_id"`
 }

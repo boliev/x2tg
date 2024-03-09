@@ -57,18 +57,27 @@ func (r *Reddit) toDomain(posts []redditPost) []*domain.Post {
 	for _, post := range posts {
 		contentType := domain.TYPE_TEXT
 		content := post.Data.Selftext
+		source := post.Data.Url
+		media := []string{}
 		if post.Data.IsVideo {
 			contentType = domain.TYPE_VIDEO
 			content = post.Data.Media.RedditVideo.FallbackUrl
 		} else if post.Data.PostHint == "image" {
 			contentType = domain.TYPE_PIC
 			content = post.Data.Url
+		} else if len(post.Data.GalleryData.Items) > 0 {
+			contentType = domain.TYPE_GALLERY
+			source = post.Data.Permalink
+			for _, pic := range post.Data.GalleryData.Items {
+				media = append(media, fmt.Sprintf("https://i.redd.it/%s.jpg", pic.MediaId))
+			}
 		}
 		domainPosts = append(domainPosts, &domain.Post{
 			Title:   post.Data.Title,
-			Source:  post.Data.Url,
+			Source:  source,
 			Content: content,
 			Type:    contentType,
+			Media:   media,
 		})
 	}
 

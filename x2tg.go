@@ -5,6 +5,7 @@ import (
 
 	db "github.com/boliev/x2tg/internal/infra/db"
 	parser "github.com/boliev/x2tg/internal/service/parser"
+	"github.com/boliev/x2tg/internal/service/publisher"
 	"github.com/boliev/x2tg/pkg/http_client"
 )
 
@@ -19,6 +20,8 @@ func (a App) Run() {
 	a.parsers = make(map[string]parser.Parser)
 	a.parsers["reddit"] = parser.NewRedditParser(httpClient)
 
+	publisher := publisher.NewPublisher(httpClient)
+
 	DB, err := db.NewDBConnection("localhost", 5432, "x2tg", "123456", "x2tg")
 	if err != nil {
 		panic(fmt.Sprintf("cannot connect to DB %s", err.Error()))
@@ -32,12 +35,17 @@ func (a App) Run() {
 	}
 
 	for _, source := range sources {
-		fmt.Printf("%#v\n\n", source)
-		// posts, err := a.parsers["reddit"].Parse(source)
-		// if err != nil {
-		// 	fmt.Printf("error: %s", err.Error())
-		// 	continue
-		// }
+		// fmt.Printf("%#v\n\n", source)
+		posts, err := a.parsers["reddit"].Parse(source)
+		if err != nil {
+			fmt.Printf("error: %s", err.Error())
+			continue
+		}
+
+		err = publisher.Publish(posts, source.Channels)
+		if err != nil {
+			fmt.Printf("error: %s", err.Error())
+		}
 
 		// for _, post := range posts {
 		// 	fmt.Printf("Title: %s\nURL: %s\nType: %s\n---\n", post.Title, post.Source, post.Type)

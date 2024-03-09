@@ -34,11 +34,3 @@ INSERT INTO sources_channels (source_id, channel_id) VALUES
 (3,1),
 (4,2),
 (4,1);
-
-
-
-SELECT s.id, s.resource, s.url, s.is_active, c.name
-FROM sources s
-INNER JOIN sources_channels sc ON sc.source_id = s.id
-INNER JOIN channels c ON c.id = sc.channel_id
-WHERE s.is_active = true
