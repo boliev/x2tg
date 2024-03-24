@@ -11,6 +11,7 @@ OVERRIDING SYSTEM VALUE VALUES
 ('reddit', 'https://www.reddit.com/r/StartledCats/', true),
 ('reddit', 'https://www.reddit.com/r/ProgrammerHumor/', true),
 ('reddit', 'https://www.reddit.com/r/CozyPlaces/', true);
+INSERT INTO sources (resource, url, is_active) VALUES ('reddit', 'https://www.reddit.com/r/CityPorn/', true)
 
 CREATE TABLE IF NOT EXISTS channels(  
     id int NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -34,3 +35,13 @@ INSERT INTO sources_channels (source_id, channel_id) VALUES
 (3,1),
 (4,2),
 (4,1);
+
+CREATE TABLE IF NOT EXISTS sent(  
+    source VARCHAR(255),
+    channel VARCHAR(255),
+    PRIMARY KEY(source, channel)
+);
+
+INSERT INTO sources (resource, url, is_active) VALUES ('reddit', 'https://www.reddit.com/r/CityPorn/', true)
+INSERT INTO sources_channels (source_id, channel_id) VALUES (5, 2)
+

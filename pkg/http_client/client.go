@@ -13,7 +13,20 @@ type HTTP struct {
 }
 
 func (h *HTTP) Get(uri string) (int, string, error) {
-	res, err := http.Get(uri)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return 0, "", err
+	}
+	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+	//req.Header.Add("Accept-Encoding", "gzip, deflate, br")
+	req.Header.Add("Accept-Language", "en-GB,en-US;q=0.9,en;q=0.8")
+	req.Header.Add("Cache-Control", "max-age=0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")
+
+	res, err := client.Do(req)
+
+	// res, err := http.Get(uri)
 	if err != nil {
 		return 0, "", err
 	}

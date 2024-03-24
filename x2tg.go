@@ -21,13 +21,15 @@ func (a App) Run() {
 	a.parsers = make(map[string]parser.Parser)
 	a.parsers["reddit"] = parser.NewRedditParser(httpClient)
 
-	publisher := publisher.NewPublisher(httpClient)
-
 	DB, err := db.NewDBConnection("localhost", 5432, "x2tg", "123456", "x2tg")
 	if err != nil {
 		panic(fmt.Sprintf("cannot connect to DB %s", err.Error()))
 	}
 	defer DB.Close()
+
+	postRepository := db.NewPostRepository(DB)
+
+	publisher := publisher.NewPublisher(httpClient, postRepository)
 
 	sourceRepository := db.NewSourceRepository(DB)
 	sources, err := sourceRepository.GetActive()
@@ -39,7 +41,7 @@ func (a App) Run() {
 		// fmt.Printf("%#v\n\n", source)
 		posts, err := a.parsers["reddit"].Parse(source)
 		if err != nil {
-			fmt.Printf("error: %s", err.Error())
+			fmt.Printf("error parsing subreddit: %s", err.Error())
 			continue
 		}
 

@@ -6,31 +6,35 @@ import (
 	"time"
 
 	"github.com/boliev/x2tg/internal/domain/model"
+	"github.com/boliev/x2tg/internal/domain/repository"
 )
 
 type Publisher struct {
-	client HttpClient
+	client         HttpClient
+	postRepository repository.PostRepository
 }
 
-func NewPublisher(client HttpClient) *Publisher {
+func NewPublisher(client HttpClient, postRepository repository.PostRepository) *Publisher {
 	return &Publisher{
-		client: client,
+		client:         client,
+		postRepository: postRepository,
 	}
 }
 
 func (p *Publisher) Publish(posts []*model.Post, channels []*model.Channel) error {
 	for _, cnh := range channels {
 		for _, post := range posts {
-			uri := "https://api.telegram.org//sendMessage"
-			if post.Type == model.TYPE_GALLERY {
-				uri = "https://api.telegram.org//sendMediaGroup"
+			isSent, err := p.postRepository.IsSent(post, cnh)
+
+			if err != nil {
+				return err
 			}
-			if post.Type == model.TYPE_PIC {
-				uri = "https://api.telegram.org//sendPhoto"
+
+			if isSent {
+				continue
 			}
-			if post.Type == model.TYPE_VIDEO {
-				uri = "https://api.telegram.org//sendVideo"
-			}
+
+			uri := p.getPostMessageUri(post)
 
 			request, err := p.buildRequest(cnh, post)
 			if err != nil {
@@ -44,13 +48,27 @@ func (p *Publisher) Publish(posts []*model.Post, channels []*model.Channel) erro
 				fmt.Printf("cannot publish post %s: code %d, %s\n", post.Source, code, message)
 			}
 
-			time.Sleep(2 * time.Second)
+			p.makeSent(post, cnh)
+			time.Sleep(5 * time.Second)
 		}
 	}
 
 	return nil
 }
 
+func (p *Publisher) getPostMessageUri(post *model.Post) string {
+	if post.Type == model.TYPE_GALLERY {
+		return "https://api.telegram.org//sendMediaGroup"
+	}
+	if post.Type == model.TYPE_PIC {
+		return "https://api.telegram.org//sendPhoto"
+	}
+	if post.Type == model.TYPE_VIDEO {
+		return "https://api.telegram.org//sendVideo"
+	}
+
+	return "https://api.telegram.org//sendMessage"
+}
 func (p *Publisher) buildRequest(cnh *model.Channel, post *model.Post) (*postRequest, error) {
 	// photo request
 	// video request
@@ -146,4 +164,13 @@ func (p *Publisher) buildPostContent(post *model.Post) string {
 	}
 
 	return template
+}
+
+func (p *Publisher) makeSent(post *model.Post, cnh *model.Channel) error {
+	err := p.postRepository.MakeSent(post, cnh)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
