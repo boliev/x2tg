@@ -7,4 +7,7 @@ require (
 	github.com/lib/pq v1.10.9
 )
 
-require github.com/huandu/xstrings v1.3.2 // indirect
+require (
+	github.com/caarlos0/env/v10 v10.0.0 // indirect
+	github.com/huandu/xstrings v1.3.2 // indirect
+)

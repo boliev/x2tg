@@ -9,15 +9,19 @@ import (
 	"github.com/boliev/x2tg/internal/domain/repository"
 )
 
+const apiHost = "https://api.telegram.org/"
+
 type Publisher struct {
 	client         HttpClient
 	postRepository repository.PostRepository
+	botToken       string
 }
 
-func NewPublisher(client HttpClient, postRepository repository.PostRepository) *Publisher {
+func NewPublisher(client HttpClient, postRepository repository.PostRepository, botToken string) *Publisher {
 	return &Publisher{
 		client:         client,
 		postRepository: postRepository,
+		botToken:       botToken,
 	}
 }
 
@@ -57,17 +61,16 @@ func (p *Publisher) Publish(posts []*model.Post, channels []*model.Channel) erro
 }
 
 func (p *Publisher) getPostMessageUri(post *model.Post) string {
+	method := "sendMessage"
 	if post.Type == model.TYPE_GALLERY {
-		return "https://api.telegram.org//sendMediaGroup"
-	}
-	if post.Type == model.TYPE_PIC {
-		return "https://api.telegram.org//sendPhoto"
-	}
-	if post.Type == model.TYPE_VIDEO {
-		return "https://api.telegram.org//sendVideo"
+		method = "sendMediaGroup"
+	} else if post.Type == model.TYPE_PIC {
+		method = "sendPhoto"
+	} else if post.Type == model.TYPE_VIDEO {
+		method = "sendVideo"
 	}
 
-	return "https://api.telegram.org//sendMessage"
+	return fmt.Sprintf("%s%s/%s", apiHost, p.botToken, method)
 }
 func (p *Publisher) buildRequest(cnh *model.Channel, post *model.Post) (*postRequest, error) {
 	// photo request

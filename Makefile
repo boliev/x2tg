@@ -1,2 +1,4 @@
+build:
+	docker compose build
 run:
-	@go run cmd/main.go
+	docker compose up
