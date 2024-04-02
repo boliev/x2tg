@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	_ "github.com/lib/pq"
 )
@@ -31,7 +32,7 @@ func NewDBConnection(host string, port int, user string, password string, dbName
 		return nil, err
 	}
 
-	fmt.Println("Connection success")
+	slog.Info("DB connection success")
 
 	return db, nil
 }

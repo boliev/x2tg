@@ -2,6 +2,7 @@ package x2tg
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"time"
 
@@ -26,17 +27,19 @@ type Config struct {
 }
 
 func (a App) Run() {
-	fmt.Println("I'm the service! I'm working!")
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
+	slog.Info("I'm the service! I'm working!")
 
 	httpClient := &http_client.HTTP{}
 	a.parsers = make(map[string]parser.Parser)
 	a.parsers["reddit"] = parser.NewRedditParser(httpClient)
 	config := &Config{}
 	if err := env.Parse(config); err != nil {
-		fmt.Printf("%+v\n", err)
+		slog.Error(fmt.Sprintf("%s\n", err.Error()))
+		os.Exit(1)
 	}
-	fmt.Printf("%v \n", config)
-	fmt.Printf("DBHOST: %s \n", os.Getenv("DB_HOST"))
 
 	DB, err := db.NewDBConnection(
 		config.DbHost,
@@ -47,7 +50,8 @@ func (a App) Run() {
 	)
 
 	if err != nil {
-		panic(fmt.Sprintf("cannot connect to DB %s", err.Error()))
+		slog.Error(fmt.Sprintf("cannot connect to DB %s", err.Error()))
+		os.Exit(1)
 	}
 	defer DB.Close()
 
@@ -58,20 +62,21 @@ func (a App) Run() {
 	sourceRepository := db.NewSourceRepository(DB)
 	sources, err := sourceRepository.GetActive()
 	if err != nil {
-		panic(fmt.Sprintf("error while retrieveing sources %s", err))
+		slog.Error(fmt.Sprintf("error while retrieveing sources %s", err))
+		os.Exit(1)
 	}
 
 	for _, source := range sources {
 		// fmt.Printf("%#v\n\n", source)
 		posts, err := a.parsers["reddit"].Parse(source)
 		if err != nil {
-			fmt.Printf("error parsing subreddit: %s", err.Error())
+			slog.Warn(fmt.Sprintf("error parsing subreddit: %s", err.Error()))
 			continue
 		}
 
 		err = publisher.Publish(posts, source.Channels)
 		if err != nil {
-			fmt.Printf("error: %s", err.Error())
+			slog.Warn(fmt.Sprintf("error: %s", err.Error()))
 		}
 
 		time.Sleep(5 * time.Second)

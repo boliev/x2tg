@@ -13,9 +13,9 @@ services:
       - db
   db:
     image: postgres:16.1
-    restart: always
     ports:
       - "5432:5432"
+    restart: no
     environment:
       POSTGRES_USER: x2tg
       POSTGRES_DB: x2tg

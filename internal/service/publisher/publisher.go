@@ -3,6 +3,7 @@ package publisher
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/boliev/x2tg/internal/domain/model"
@@ -42,14 +43,14 @@ func (p *Publisher) Publish(posts []*model.Post, channels []*model.Channel) erro
 
 			request, err := p.buildRequest(cnh, post)
 			if err != nil {
-				fmt.Printf("cannot build request %s %s\n", post.Source, err)
+				slog.Warn(fmt.Sprintf("cannot build request %s %s\n", post.Source, err))
 			}
 			code, message, err := p.client.Post(uri, request)
 			if err != nil {
-				fmt.Printf("cannot publish post %s %s\n", post.Source, err)
+				slog.Warn(fmt.Sprintf("cannot publish post %s %s\n", post.Source, err))
 			}
 			if code >= 300 {
-				fmt.Printf("cannot publish post %s: code %d, %s\n", post.Source, code, message)
+				slog.Warn(fmt.Sprintf("cannot publish post %s: code %d, %s\n", post.Source, code, message))
 			}
 
 			p.makeSent(post, cnh)

@@ -3,6 +3,7 @@ package parser
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"path"
 
 	domain "github.com/boliev/x2tg/internal/domain/model"
@@ -19,7 +20,7 @@ func NewRedditParser(client HttpClient) *Reddit {
 }
 
 func (r *Reddit) Parse(source *domain.Source) ([]*domain.Post, error) {
-	fmt.Printf("Source: %s (%s)!\n", source.Resource, source.URL)
+	slog.Info(fmt.Sprintf("Source: %s (%s)!\n", source.Resource, source.URL))
 	sub := r.getSubredditFromUrl(source.URL)
 	posts, err := r.getTopPosts(sub)
 	if err != nil {

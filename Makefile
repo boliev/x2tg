@@ -1,4 +1,5 @@
 build:
 	docker compose build
-run:
+up:
 	docker compose up
+run: build up
